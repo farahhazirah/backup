@@ -19,23 +19,18 @@
         <!-- End Filter Event Form -->
       </div>
     </div>
-      <div class="col-md-15">
+    <div class="col-md-15">
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Search</h5>
           <hr>
-          <input
-                type="text"
-                id="searchInput"
-                onkeyup="filterEvents()"
-                placeholder="Search events..."
-                style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;"
-            />
+          <input type="text" id="searchInput" onkeyup="filterEvents()" placeholder="Search events..."
+            style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;" />
         </div>
       </div>
     </div>
   </div>
-  </div>
+</div>
 
 <!-- Add custom CSS to style all buttons -->
 <style>
@@ -110,53 +105,128 @@
       // Fetch events from the database
       eventSources: [
         {
-          url: fetchUrl, // URL to your PHP endpoint
-          method: 'GET',
-          failure: function (error) {
-            console.error('Error fetching events:', error);
-          }
-        }
-      ], 
+          id: 'Personal',
+          url: '<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=Personal'
+        },
+        {
+          id: 'Academic',
+          url: '<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=Academic'
+        },
+        {
+          id: 'Entrepreneurship',
+          url: '<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=Entrepreneurship'
+        },
+        {
+          id: 'Sport',
+          url: '<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=Sport'
+        },
+        {
+          id: 'Volunteering',
+          url: '<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=Volunteering'
+        },
+      ],
       eventColor: '#A78A7F',
 
-      eventClick: function(info) { //info=event yang show kat calendar
-      document.getElementById("event_name_display").innerText = info.event.title;
+      eventClick: function (info) { //info=event yang show kat calendar
+        document.getElementById("event_name_display").innerText = info.event.title;
 
-      var startDate = moment(info.event.start).format('DD/MM/YYYY');
-      document.getElementById("event_start_date_display").innerText = startDate;
+        var startDate = moment(info.event.start).format('DD/MM/YYYY');
+        document.getElementById("event_start_date_display").innerText = startDate;
 
-      let endDate = info.event.end ? new Date(info.event.end) : null;
-      if (endDate) {
-        endDate.setDate(endDate.getDate() - 1); // Add one day
-        endDate = moment(endDate).format('DD/MM/YYYY'); 
+        let endDate = info.event.end ? new Date(info.event.end) : null;
+        if (endDate) {
+          endDate.setDate(endDate.getDate() - 1); // Add one day
+          endDate = moment(endDate).format('DD/MM/YYYY');
+        }
+
+        document.getElementById("event_end_date_display").innerText = endDate ? endDate : '';
+        document.getElementById("event_type_display").innerText = info.event.extendedProps.type;
+        document.getElementById("event_description_display").innerText = info.event.extendedProps.description;
+
+        // Store event ID for edit and delete operations
+        document.getElementById("event_details_modal").dataset.eventId = info.event.id;
+
+        // Show the event details modal
+        $('#event_details_modal').modal('show');
+
       }
-      
-      document.getElementById("event_end_date_display").innerText = endDate ? endDate : '';
-      document.getElementById("event_type_display").innerText = info.event.extendedProps.type;
-      document.getElementById("event_description_display").innerText = info.event.extendedProps.description;
-
-      // Store event ID for edit and delete operations
-      document.getElementById("event_details_modal").dataset.eventId = info.event.id;
-
-      // Show the event details modal
-      $('#event_details_modal').modal('show');
-        
-    }
     });
-    
+
     calendar.render();
+
+    // document.querySelectorAll('#filterForm input[name="eventType"]').forEach(function (checkbox) {
+    //   checkbox.addEventListener('change', function () {
+    //     const eventType = checkbox.id;
+
+    //     if (checkbox.checked) {
+    //       console.log(`Adding event source for type: ${eventType}`);
+    //       calendar.addEventSource({
+    //         id: eventType, // Use the dataId (event type) as the unique event source ID
+    //         url: `<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=${eventType}`, // Dynamically append eventType to the URL
+    //         success: function (events) {
+    //           console.log('Fetched events:', events); // Log the fetched events for debugging
+    //         },
+    //         failure: function (error) {
+    //           console.error('Failed to fetch events:', error); // Log errors if fetching fails
+    //         }
+    //       });
+    //     } else {
+    //       console.log(`Removing event source for ID: ${eventType}`);
+    //       const source = calendar.getEventSourceById(eventType);
+    //       if (source) {
+    //         source.remove();
+    //       } else {
+    //         console.warn(`Event source with ID "${eventType}" not found.`);
+    //       }
+    //     }
+    //   });
+    // });
+
+
+    $('#filterForm input[name="eventType"]').change(function () {
+      const checkbox = $(this); // The checkbox element that triggered the event
+      const eventType = checkbox.val(); // Get the value of the checkbox (e.g., "Personal")
+      const eventId = checkbox.val(); // Get the id of the checkbox (e.g., "personal")
+
+      if (checkbox.is(":checked")) {
+        // Check if the event source already exists
+        if (!calendar.getEventSourceById(eventId)) {
+          // Add the event source when the checkbox is checked
+          calendar.addEventSource({
+            id: eventId,
+            url: `<?= BASE_URL; ?>index.php?r=calendar/fetchEvent&type=${eventType}`, // Pass eventType as a parameter
+            success: function () {
+              console.log(`Event source for ${eventType} added.`);
+            },
+            failure: function (error) {
+              console.error(`Failed to add event source for ${eventType}:`, error);
+            }
+          });
+        } else {
+          console.warn(`Event source with ID "${eventId}" already exists.`);
+        }
+      } else {
+        // Remove the event source when the checkbox is unchecked
+        const source = calendar.getEventSourceById(eventId);
+        if (source) {
+          source.remove(); // Remove the event source with the matching ID
+          console.log(`Event source for ${eventType} removed.`);
+        } else {
+          console.warn(`Event source with ID "${eventId}" not found.`);
+        }
+      }
+    });
   });
 
   function save_event() {
-    var event_name=$("#event_name").val();
-    var event_start_date=$("#event_start_date").val();
-    var event_end_date=$("#event_end_date").val();
-    var event_type=$("#event_type").val();
-    var event_description=$("#event_description").val();
-    if(event_name=="" || event_start_date=="" || event_end_date=="" || event_type=="" || event_description=="")
-    {
-    alert("Please enter all required details.");
-    return false;
+    var event_name = $("#event_name").val();
+    var event_start_date = $("#event_start_date").val();
+    var event_end_date = $("#event_end_date").val();
+    var event_type = $("#event_type").val();
+    var event_description = $("#event_description").val();
+    if (event_name == "" || event_start_date == "" || event_end_date == "" || event_type == "" || event_description == "") {
+      alert("Please enter all required details.");
+      return false;
     }
     var formData = new FormData(document.getElementById("eventForm"));
 
@@ -186,52 +256,52 @@
   function delete_event() {
 
     var eventId = document.getElementById("event_details_modal").dataset.eventId;
-    
-    if (confirm("Are you sure you want to delete this event?")) {
-        // Proceed with deletion if confirmed
-        var formData = new FormData();
-        formData.append("event_id", eventId);
 
-        fetch("<?= BASE_URL; ?>index.php?r=calendar/deleteEvent", {
-            method: "POST",
-            body: formData,
-        })
+    if (confirm("Are you sure you want to delete this event?")) {
+      // Proceed with deletion if confirmed
+      var formData = new FormData();
+      formData.append("event_id", eventId);
+
+      fetch("<?= BASE_URL; ?>index.php?r=calendar/deleteEvent", {
+        method: "POST",
+        body: formData,
+      })
         .then(response => response.json())
         .then(data => {
-            if (data.status === "success") {
-                alert(data.message); // Show a success message
-                $('#event_details_modal').modal('hide'); // Hide modal after deletion
-                location.reload(); // Reload the page or refresh events on the calendar
-                console.log("Event deleted successfully");
-            } else {
-                alert(data.message);
-            }
+          if (data.status === "success") {
+            alert(data.message); // Show a success message
+            $('#event_details_modal').modal('hide'); // Hide modal after deletion
+            location.reload(); // Reload the page or refresh events on the calendar
+            console.log("Event deleted successfully");
+          } else {
+            alert(data.message);
+          }
         })
         .catch(error => {
-            console.error("Error:", error);
-            alert("An error occurred while deleting the event.");
+          console.error("Error:", error);
+          alert("An error occurred while deleting the event.");
         });
     }
-}
+  }
 
   function view_event(eventId) {
-      fetch("<?= BASE_URL; ?>index.php?r=calendar/fetchSingleEvent", {
-            method: "POST",
-            body: JSON.stringify({ event_id: eventId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Fill modal with event data
-            document.getElementById("view_event_name").textContent = data.title;
-            document.getElementById("view_event_start_date").textContent = data.start;
-            document.getElementById("view_event_end_date").textContent = data.end;
-            document.getElementById("view_event_type").textContent = data.type;
-            document.getElementById("view_event_description").textContent = data.description;
+    fetch("<?= BASE_URL; ?>index.php?r=calendar/fetchSingleEvent", {
+      method: "POST",
+      body: JSON.stringify({ event_id: eventId })
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Fill modal with event data
+        document.getElementById("view_event_name").textContent = data.title;
+        document.getElementById("view_event_start_date").textContent = data.start;
+        document.getElementById("view_event_end_date").textContent = data.end;
+        document.getElementById("view_event_type").textContent = data.type;
+        document.getElementById("view_event_description").textContent = data.description;
 
-            // Show the modal
-            $('#event_details_modal').modal('show');
-        })
-        .catch(error => console.error("Error fetching event data:", error));
+        // Show the modal
+        $('#event_details_modal').modal('show');
+      })
+      .catch(error => console.error("Error fetching event data:", error));
   }
 
   function edit_event(eventId) {
@@ -239,35 +309,35 @@
     var eventId = document.getElementById("event_details_modal").dataset.eventId;
 
     $('#event_details_modal').modal('hide')
-  
+
     // Fetch current event details
     fetch("<?= BASE_URL; ?>index.php?r=calendar/fetchSingleEvent", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ event_id: eventId })
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ event_id: eventId })
     })
-    .then(response => response.json())
-    .then(data => {
+      .then(response => response.json())
+      .then(data => {
         if (data.status === "success") {
-            // Populate the form fields with the existing event data
-            document.getElementById("edit_event_id").value = data.event_id;
-            document.getElementById("edit_event_name").value = data.event_name;
-            document.getElementById("edit_event_start_date").value = data.start_date;
-            document.getElementById("edit_event_end_date").value = data.end_date;
-            document.getElementById("edit_event_description").value = data.description;
-            const eventTypeDropdown = document.getElementById("edit_event_type");
-            eventTypeDropdown.value = data.event_type;
+          // Populate the form fields with the existing event data
+          document.getElementById("edit_event_id").value = data.event_id;
+          document.getElementById("edit_event_name").value = data.event_name;
+          document.getElementById("edit_event_start_date").value = data.start_date;
+          document.getElementById("edit_event_end_date").value = data.end_date;
+          document.getElementById("edit_event_description").value = data.description;
+          const eventTypeDropdown = document.getElementById("edit_event_type");
+          eventTypeDropdown.value = data.event_type;
 
-            // Show the edit event modal
-            $('#edit_event_modal').modal('show');
+          // Show the edit event modal
+          $('#edit_event_modal').modal('show');
         } else {
-            alert(data.message);
+          alert(data.message);
         }
-    })
-    .catch(error => console.error("Error fetching event data:", error));
-}
+      })
+      .catch(error => console.error("Error fetching event data:", error));
+  }
 
   function update_event() {
 
@@ -277,7 +347,7 @@
     const endDate = document.getElementById("edit_event_end_date").value;
     const eventType = document.getElementById("edit_event_type").value;
     const description = document.getElementById("edit_event_description").value;
-    
+
 
     fetch("<?= BASE_URL; ?>index.php?r=calendar/updateEvent", {
       method: "POST",
@@ -290,48 +360,47 @@
         description: description
       })
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === "success") {
-        alert(data.message);
-        $('#edit_event_modal').modal('hide');
-        location.reload(); // Reload calendar to reflect changes
-      } else {
-        alert(data.message);
-      }
-    })
-    .catch(error => console.error("Error updating event:", error));
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert(data.message);
+          $('#edit_event_modal').modal('hide');
+          location.reload(); // Reload calendar to reflect changes
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => console.error("Error updating event:", error));
   }
 
-    //FILTER
-    function filter_events() {
+  //FILTER
+  function filter_events() {
     const checkboxes = document.querySelectorAll('input[name="eventType"]:checked');
     const selectedFilters = Array.from(checkboxes).map(checkbox => checkbox.value); // Collect selected filter values
 
     // If no filters are selected, fetch all events
     if (selectedFilters.length === 0) {
-        fetchAllEvents(); // Ensure this function fetches and displays all events
-        return;
+      fetchAllEvents(); // Ensure this function fetches and displays all events
+      return;
     }
 
     // Fetch filtered events
     fetch("<?= BASE_URL; ?>index.php?r=calendar/fetchEventFilter", {
-        method: "POST",
-        body: JSON.stringify({ filters: selectedFilters }),
-        headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify({ filters: selectedFilters }),
+      headers: { "Content-Type": "application/json" },
     })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.length > 0) { // Check if any events are returned
-                calendar.removeAllEvents(); // Clear existing events
-                calendar.addEventSource(data.events); // Add filtered events to calendar
-            } else {
-                calendar.removeAllEvents(); // Clear calendar if no events match filters
-                alert("No events matched the selected filters.");
-            }
-        })
-        .catch((error) => console.error("Error filtering events:", error));
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.length > 0) { // Check if any events are returned
+          calendar.removeAllEvents(); // Clear existing events
+          calendar.addEventSource(data.events); // Add filtered events to calendar
+        } else {
+          calendar.removeAllEvents(); // Clear calendar if no events match filters
+          alert("No events matched the selected filters.");
+        }
+      })
+      .catch((error) => console.error("Error filtering events:", error));
   }
 
 </script>
-

@@ -40,7 +40,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
     <script src="<?php echo ASSET_URL; ?>bootstrap/js/bootstrap.min.js"></script>
     <script src="<?php echo ASSET_URL; ?>bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo ASSET_URL; ?>fullcalendar/dist/index.global.min.js"></script>
+    <script src="<?php echo ASSET_URL; ?>@fullcalendar/core/index.global.min.js"></script>
+    <script src="<?php echo ASSET_URL; ?>@fullcalendar/daygrid/index.global.min.js"></script>
 </body>
 
 </html>
