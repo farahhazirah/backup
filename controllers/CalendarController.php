@@ -34,7 +34,7 @@ class CalendarController extends Controller
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
                     $event[] = [
-                        'id' => $row['event_type'], // Unique identifier for the event
+                        'id' => $row['event_id'], // Unique identifier for the event
                         'title' => $row['event_name'], // Event title
                         'start' => $row['start_date'], // Start date of the event
                         'end' => date('Y-m-d', strtotime('+1 day', strtotime($row['end_date']))), // Adjusted end date
@@ -172,53 +172,6 @@ class CalendarController extends Controller
         $stmt->close();
         $conn->close();
 
-    }
-
-    //FILTER
-    public function fetchEventFilter()
-    {
-        require_once ROOT_PATH . 'config/db.php';
-
-        // Parse the POST request body
-        $input = json_decode(file_get_contents('php://input'), true);
-        $filters = isset($input['filters']) ? $input['filters'] : [];
-
-        $sql = "SELECT * FROM event";
-
-        if (!empty($filters)) {
-            $placeholders = implode(',', array_fill(0, count($filters), '?'));
-            $sql .= " WHERE event_type IN ($placeholders)";
-        }
-
-        $stmt = $conn->prepare($sql);
-
-        if (!empty($filters)) {
-            $stmt->bind_param(str_repeat('s', count($filters)), ...$filters);
-        }
-
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $events = [];
-        while ($row = $result->fetch_assoc()) {
-            $events[] = [
-                'id' => $row['event_type'],
-                'title' => $row['event_name'],
-                'start' => $row['start_date'],
-                'end' => date('Y-m-d', strtotime('+1 day', strtotime($row['end_date']))),
-                'type' => $row['event_type'],
-                'description' => $row['description'] ?? '',
-            ];
-        }
-
-        $stmt->close();
-        $conn->close();
-
-        header('Content-Type: application/json');
-        echo json_encode([
-            'status' => !empty($events) ? 'success' : 'error',
-            'event' => $events,
-        ]);
     }
 
 }

@@ -35,7 +35,7 @@
                     <li><a href="#"
                             class="nav-link px-2 text-white">Club</a></li>
                     <li><a href="<#"
-                            class="nav-link px-2 text-white">History Feedback</a></li>
+                            class="nav-link px-2 text-white">History</a></li>
                 </ul>
 
                 <div class="dropdown text-end">

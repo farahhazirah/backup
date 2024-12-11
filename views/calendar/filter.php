@@ -65,7 +65,6 @@
                     </div>
                     <!-- Add more event items as needed -->
                 </div>
-                <button type="button" onclick="filter_events()" style="margin-top: 30px;">Apply Filter</button>
             </form>
         </div>
     </div>
