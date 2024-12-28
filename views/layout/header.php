@@ -34,7 +34,9 @@
                             class="nav-link px-2 text-white">Calendar</a></li>
                     <li><a href="#"
                             class="nav-link px-2 text-white">Club</a></li>
-                    <li><a href="<#"
+                    <li><a href="#"
+                            class="nav-link px-2 text-white">Event</a></li>
+                    <li><a href="#"
                             class="nav-link px-2 text-white">History</a></li>
                 </ul>
 

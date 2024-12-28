@@ -6,10 +6,10 @@ class CalendarController extends Controller
 
     public function index()
     {
-        $this->render('index');
+           $this->render('index');
     }
 
-    public function fetchEvent() // Event shown in the calendar
+    public function fetchEvent()//event showed in calendar
     {
         require_once ROOT_PATH . 'config/db.php';
 
@@ -39,7 +39,8 @@ class CalendarController extends Controller
                         'start' => $row['start_date'], // Start date of the event
                         'end' => date('Y-m-d', strtotime('+1 day', strtotime($row['end_date']))), // Adjusted end date
                         'type' => $row['event_type'], // Event type
-                        'description' => $row['description'] ?? '', // Optional description
+                        'description' => $row['description'] ?? '', 
+                        'reminder_time' => $row['reminder_time'],
                         'backgroundColor' => $colour[$type],
                     ];
                 }
@@ -72,10 +73,11 @@ class CalendarController extends Controller
             $end_date = $_POST['event_end_date'];
             $event_type = $_POST['event_type'];
             $description = $_POST['event_description'];
+            $reminder_time = $_POST['reminder_time'];
 
             // Insert data into the event table
-            $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $event_name, $start_date, $end_date, $event_type, $description);
+            $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description, reminder_time) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssss", $event_name, $start_date, $end_date, $event_type, $description, $reminder_time);
 
             if ($stmt->execute()) {
                 echo json_encode(["status" => "success", "message" => "Event created successfully"]);
@@ -143,7 +145,8 @@ class CalendarController extends Controller
                 "start_date" => $eventData['start_date'],
                 "end_date" => $eventData['end_date'],
                 "event_type" => $eventData['event_type'],
-                "description" => $eventData['description']
+                "description" => $eventData['description'],
+                "reminder_time" => $eventData['reminder_time'],
             ]);
         } else {
             echo json_encode(["status" => "error", "message" => "Event not found"]);
@@ -153,15 +156,14 @@ class CalendarController extends Controller
         $conn->close();
     }
 
-    public function updateEvent()
-    {
+    public function updateEvent() {
 
         require_once ROOT_PATH . 'config/db.php';
 
         $data = json_decode(file_get_contents("php://input"));
 
-        $stmt = $conn->prepare("UPDATE event SET event_name = ?, start_date = ?, end_date = ?, event_type = ?, description = ? WHERE event_id = ?");
-        $stmt->bind_param("sssssi", $data->event_name, $data->start_date, $data->end_date, $data->event_type, $data->description, $data->event_id);
+        $stmt = $conn->prepare("UPDATE event SET event_name = ?, start_date = ?, end_date = ?, event_type = ?, description = ?, reminder_time = ? WHERE event_id = ?");
+        $stmt->bind_param("ssssssi", $data->event_name, $data->start_date, $data->end_date, $data->event_type, $data->description, $data->reminder_time, $data->event_id);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Event updated successfully"]);
@@ -173,5 +175,53 @@ class CalendarController extends Controller
         $conn->close();
 
     }
+
+    //FILTER
+    public function fetchEventFilter()
+{
+    require_once ROOT_PATH . 'config/db.php';
+
+    // Parse the POST request body
+    $input = json_decode(file_get_contents('php://input'), true);
+    $filters = isset($input['filters']) ? $input['filters'] : [];
+
+    $sql = "SELECT * FROM event";
+
+    if (!empty($filters)) {
+        $placeholders = implode(',', array_fill(0, count($filters), '?'));
+        $sql .= " WHERE event_type IN ($placeholders)";
+    }
+
+    $stmt = $conn->prepare($sql);
+
+    if (!empty($filters)) {
+        $stmt->bind_param(str_repeat('s', count($filters)), ...$filters);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $events = [];
+    while ($row = $result->fetch_assoc()) {
+        $events[] = [
+            'id' => $row['event_id'],
+            'title' => $row['event_name'],
+            'start' => $row['start_date'],
+            'end' => date('Y-m-d', strtotime('+1 day', strtotime($row['end_date']))),
+            'type' => $row['event_type'],
+            'description' => $row['description'] ?? '',
+            'reminder_time' => $row['reminder_time'],
+        ];
+    }
+
+    $stmt->close();
+    $conn->close();
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => !empty($events) ? 'success' : 'error',
+        'event' => $events,
+    ]);
+}
 
 }

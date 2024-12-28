@@ -60,10 +60,20 @@
               <option value="Sport">Sport</option>
               <option value="Volunteering">Volunteering</option>
             </select>
+          </div>
           <div class="mb-3">
             <label for="edit_event_description" class="form-label">Description</label>
             <textarea class="form-control" id="edit_event_description"></textarea>
           </div>
+          <div class="mb-3">
+            <label for="edit_event_reminder_time" class="form-label">Reminder Time</label>
+            <select class="form-control" id="edit_event_reminder_time" required>
+              <option value="" disabled selected>Select reminder time</option>
+              <option value="15_minutes">15 minutes before</option>
+              <option value="30_minutes">30 minutes before</option>
+              <option value="1_hour">1 hour before</option>
+              <option value="1_day">1 day before</option>
+            </select>
         </form>
       </div>
       <div class="modal-footer">
