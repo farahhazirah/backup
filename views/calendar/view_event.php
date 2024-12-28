@@ -40,8 +40,13 @@ data-bs-backdrop="static" data-bs-keyboard="false">
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label"><strong>Reminder:</strong></label>
+                                <p class="form-control-plaintext" id="event_reminder_checkbox">[Reminder Checkbox]</p>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label"><strong>Reminder Time:</strong></label>
-                                <p class="form-control-plaintext" id="event_reminder_time_display">[Reminder Time]</p>
+                                <p class="form-control-plaintext" id="event_reminder_time">[Reminder Time]</p>
                             </div>
                         </form>
                     </div>

@@ -88,7 +88,7 @@
                             <div class="col-sm-6">
                                 <div class="form-group">
                                     <label>Set as Reminder <i class="fa-solid fa-bell"></i></label><br>
-                                    <input type="checkbox" id="set_reminder" onclick="toggleReminder()">
+                                    <input type="checkbox" id="set_reminder" name="set_reminder" onclick="toggleReminder()">
                                     <label for="set_reminder">Yes</label>
                                 </div>
                             </div>
@@ -98,10 +98,9 @@
                                     <label for="reminder_time">Reminder Time <i class="fa-solid fa-stopwatch"></i></label>
                                     <select name="reminder_time" id="reminder_time" class="form-control">
                                     <option value="" disabled selected>Select reminder time</option>
-                                        <option value="15_minutes">15 minutes before</option>
-                                        <option value="30_minutes">30 minutes before</option>
-                                        <option value="1_hour">1 hour before</option>
-                                        <option value="1_day">1 day before</option>
+                                        <?php foreach ($reminderType as $key => $value) { ?>
+                                            <option value="<?php echo $value['name'] ?>"><?php echo $value['name'] ?></option>
+                                        <?php } ?>
                                     </select>
                                 </div>
                             </div>

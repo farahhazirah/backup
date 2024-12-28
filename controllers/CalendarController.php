@@ -6,7 +6,13 @@ class CalendarController extends Controller
 
     public function index()
     {
-           $this->render('index');
+        require_once ROOT_PATH . 'config/db.php';
+        $sql = "SELECT * FROM reminder_type";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            $reminderType = $stmt->get_result();
+
+        $this->render('index', array('reminderType'=>$reminderType));
     }
 
     public function fetchEvent()//event showed in calendar
@@ -40,6 +46,7 @@ class CalendarController extends Controller
                         'end' => date('Y-m-d', strtotime('+1 day', strtotime($row['end_date']))), // Adjusted end date
                         'type' => $row['event_type'], // Event type
                         'description' => $row['description'] ?? '', 
+                        'reminder_checkbox' => $row['reminder_checkbox'],
                         'reminder_time' => $row['reminder_time'],
                         'backgroundColor' => $colour[$type],
                     ];
@@ -74,10 +81,14 @@ class CalendarController extends Controller
             $event_type = $_POST['event_type'];
             $description = $_POST['event_description'];
             $reminder_time = $_POST['reminder_time'];
+            $set_reminder = $_POST['set_reminder'] ?? 'No'; // Default to '0' if not set
 
             // Insert data into the event table
-            $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description, reminder_time) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssss", $event_name, $start_date, $end_date, $event_type, $description, $reminder_time);
+            // $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description) VALUES (?, ?, ?, ?, ?)");
+            // $stmt->bind_param("sssssss", $event_name, $start_date, $end_date, $event_type, $description);
+
+            $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description, reminder_checkbox, reminder_time) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssss", $event_name, $start_date, $end_date, $event_type, $description, $set_reminder, $reminder_time);
 
             if ($stmt->execute()) {
                 echo json_encode(["status" => "success", "message" => "Event created successfully"]);
@@ -86,6 +97,8 @@ class CalendarController extends Controller
             }
 
             $stmt->close();
+        } else {
+            echo json_encode(["status" => "error", "message" => "Invalid request method."]);
         }
         $conn->close();
     }
@@ -147,6 +160,7 @@ class CalendarController extends Controller
                 "event_type" => $eventData['event_type'],
                 "description" => $eventData['description'],
                 "reminder_time" => $eventData['reminder_time'],
+                "reminder_checkbox" => $eventData['reminder_checkbox'],
             ]);
         } else {
             echo json_encode(["status" => "error", "message" => "Event not found"]);
@@ -162,8 +176,8 @@ class CalendarController extends Controller
 
         $data = json_decode(file_get_contents("php://input"));
 
-        $stmt = $conn->prepare("UPDATE event SET event_name = ?, start_date = ?, end_date = ?, event_type = ?, description = ?, reminder_time = ? WHERE event_id = ?");
-        $stmt->bind_param("ssssssi", $data->event_name, $data->start_date, $data->end_date, $data->event_type, $data->description, $data->reminder_time, $data->event_id);
+        $stmt = $conn->prepare("UPDATE event SET event_name = ?, start_date = ?, end_date = ?, event_type = ?, description = ?, reminder_time = ?, reminder_checkbox = ? WHERE event_id = ?");
+        $stmt->bind_param("ssssssi", $data->event_name, $data->start_date, $data->end_date, $data->event_type, $data->description, $data->reminder_time, $data->event_id, $data->reminder_checkbox);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Event updated successfully"]);

@@ -18,6 +18,10 @@
         /* Hover effect color */
     }
 
+    .hidden {
+        display: none;
+    }
+
     .modal-header.custom-header {
         background-color: #8c2f39; 
         color: #fff; 
@@ -66,14 +70,22 @@
             <textarea class="form-control" id="edit_event_description"></textarea>
           </div>
           <div class="mb-3">
+              <div class="form-group">
+                  <label>Set as Reminder <i class="fa-solid fa-bell"></i></label><br>
+                  <input type="checkbox" id="edit_set_reminder" name="edit_set_reminder" onclick="toggleReminder2()" >
+                  <label for="set_reminder">Yes</label>
+              </div>
+          </div>
+          <div class="mb-3" id="edit_reminder_time_container">
             <label for="edit_event_reminder_time" class="form-label">Reminder Time</label>
             <select class="form-control" id="edit_event_reminder_time" required>
               <option value="" disabled selected>Select reminder time</option>
-              <option value="15_minutes">15 minutes before</option>
-              <option value="30_minutes">30 minutes before</option>
-              <option value="1_hour">1 hour before</option>
-              <option value="1_day">1 day before</option>
+              <option value="15 minutes">15 minutes before</option>
+              <option value="30 minutes">30 minutes before</option>
+              <option value="1 hour">1 hour before</option>
+              <option value="1 day">1 day before</option>
             </select>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
