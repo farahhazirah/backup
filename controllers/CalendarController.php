@@ -144,23 +144,6 @@ class CalendarController extends Controller
             return;
         }
 
-            $sql = "
-            SELECT e.id, e.title, e.start, e.end, e.description, 
-                    e.reminder_checkbox, r.name AS reminder_time
-            FROM events e
-            LEFT JOIN reminder_time r ON e.reminder_time_id = r.id
-            WHERE e.id = ?
-            ";
-
-            $stmt = $conn->prepare($sql); // Prepare the statement
-            $stmt->bind_param("i", $eventId); // Bind the event_id parameter (i = integer type)
-            $stmt->execute(); // Execute the query
-
-            $result = $stmt->get_result(); // Get the result set
-            $event = $result->fetch_assoc(); // Fetch the result as an associative array
-
-            $stmt->close(); // Close the statement
-
 
         $event_id = $data->event_id;
 

@@ -327,40 +327,54 @@
     .catch(error => console.error("Error fetching event data:", error));
 }
 
-  function update_event() {
+    function update_event() {
+        const eventId = document.getElementById("edit_event_id").value;
+        const eventName = document.getElementById("edit_event_name").value;
+        const startDate = document.getElementById("edit_event_start_date").value;
+        const endDate = document.getElementById("edit_event_end_date").value;
+        const eventType = document.getElementById("edit_event_type").value;
+        const description = document.getElementById("edit_event_description").value;
+        const reminderTime = document.getElementById("edit_set_reminder").checked
+          ? document.getElementById("edit_event_reminder_time").value
+          : '0';
+        const reminderCheckbox = document.getElementById("edit_set_reminder").checked ? 'Yes' : 'No';
+      
 
-    const eventId = document.getElementById("edit_event_id").value;
-    const eventName = document.getElementById("edit_event_name").value;
-    const startDate = document.getElementById("edit_event_start_date").value;
-    const endDate = document.getElementById("edit_event_end_date").value;
-    const eventType = document.getElementById("edit_event_type").value;
-    const description = document.getElementById("edit_event_description").value;
-    const reminderTime = document.getElementById("edit_event_reminder_time").value;
+        // Ensure all required fields are filled
+        if (!eventName || !startDate || !endDate || !eventType) {
+            alert("Please fill all required fields.");
+            return;
+        }
 
-    fetch("<?= BASE_URL; ?>index.php?r=calendar/updateEvent", {
-      method: "POST",
-      body: JSON.stringify({
-        event_id: eventId,
-        event_name: eventName,
-        start_date: startDate,
-        end_date: endDate,
-        event_type: eventType,
-        description: description,
-        reminder_time: reminder_time,
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === "success") {
-        alert(data.message);
-        $('#edit_event_modal').modal('hide');
-        location.reload(); // Reload calendar to reflect changes
-      } else {
-        alert(data.message);
-      }
-    })
-    .catch(error => console.error("Error updating event:", error));
-  }
+        fetch("<?= BASE_URL; ?>index.php?r=calendar/updateEvent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            event_id: eventId,
+            event_name: eventName,
+            start_date: startDate,
+            end_date: endDate,
+            event_type: eventType,
+            description: description,
+            reminder_time: reminderTime,
+            reminder_checkbox: reminderCheckbox,
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            alert(data.message);
+            $('#edit_event_modal').modal('hide');
+            location.reload(); // Reload calendar to reflect changes
+          } else {
+            alert(data.message);
+          }
+        })
+        .catch(error => console.error("Error updating event:", error));
+    }
+
 
 </script>
 

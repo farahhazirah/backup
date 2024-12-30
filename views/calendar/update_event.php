@@ -72,7 +72,7 @@
           <div class="mb-3">
               <div class="form-group">
                   <label>Set as Reminder <i class="fa-solid fa-bell"></i></label><br>
-                  <input type="checkbox" id="edit_set_reminder" name="edit_set_reminder" onclick="toggleReminder2()" >
+                  <input type="checkbox" id="edit_set_reminder" name="edit_set_reminder" >
                   <label for="set_reminder">Yes</label>
               </div>
           </div>
