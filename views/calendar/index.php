@@ -173,55 +173,53 @@
   });
 
   function save_event() {
-      var event_name = $("#event_name").val();
-      var event_start_date = $("#event_start_date").val();
-      var event_end_date = $("#event_end_date").val();
-      var event_type = $("#event_type").val();
-      var event_description = $("#event_description").val();
-      var event_time_reminder = $("#reminder_time").val(); // Use correct variable
-      var set_reminder = $("#set_reminder").val();
-      console.log(set_reminder);
+    var event_name = $("#event_name").val();
+    var event_start_date = $("#event_start_date").val();
+    var event_end_date = $("#event_end_date").val();
+    var event_type = $("#event_type").val();
+    var event_description = $("#event_description").val();
+    var set_reminder = $("#set_reminder").is(":checked") ? "Yes" : "No";
+    var event_time_reminder = set_reminder === "Yes" ? $("#reminder_time").val() : "0"; // Default to "0" if reminder not set
 
-      //Validate required fields
-      if (!event_name || !event_start_date || !event_end_date || !event_type || !event_description) {
-          alert("Please enter all required details.");
-          return false;
-      }
+    if (!event_name || !event_start_date || !event_end_date || !event_type || !event_description) {
+        alert("Please enter all required details.");
+        return false;
+    }
 
-      // Validate date logic
-      if (new Date(event_start_date) > new Date(event_end_date)) {
-          alert("The start date cannot be later than the end date.");
-          return false;
-      }
+    if (new Date(event_start_date) > new Date(event_end_date)) {
+        alert("The start date cannot be later than the end date.");
+        return false;
+    }
 
-      var formData = new FormData(document.getElementById("eventForm"));
+    var formData = new FormData();
+    formData.append("event_name", event_name);
+    formData.append("event_start_date", event_start_date);
+    formData.append("event_end_date", event_end_date);
+    formData.append("event_type", event_type);
+    formData.append("event_description", event_description);
+    formData.append("set_reminder", set_reminder);
+    formData.append("reminder_time", event_time_reminder);
 
-      // Debug FormData
-      for (let [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-      }
+    fetch('<?= BASE_URL; ?>index.php?r=calendar/createEvent', {
+        method: "POST",
+        body: formData,
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                $('#event_entry_modal').modal('hide');
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while saving the event. Please try again.");
+        });
+    }
 
-      fetch('<?= BASE_URL; ?>index.php?r=calendar/createEvent', { // Assuming BASE_URL is defined globally
-          method: "POST",
-          body: formData,
-      })
-      .then(response => response.json())
-      .then(data => {
-          if (data.status === "success") {
-              // Close the modal and refresh the calendar to show the new event
-              $('#event_entry_modal').modal('hide');
-              alert(data.message);
-              location.reload(); // Refresh page to reflect new data
-          } else {
-              alert(data.message);
-          }
-      })
-      .catch(error => {
-          console.error("Error:", error);
-          console.log(message);
-          alert("An error occurred while saving the event. Please try again.");
-      });
-  }
 
   // Toggle the visibility of the Reminder Time dropdown
   function toggleReminder() {
@@ -236,20 +234,6 @@
       reminderContainer.classList.add("hidden");
     }
   }
-
-  function toggleReminder2() {
-
-  const reminderCheckbox = document.getElementById("edit_set_reminder");
-  const reminderContainer = document.getElementById("edit_reminder_time_container");
-
-    if (reminderCheckbox.checked) {
-      reminderCheckbox.value = reminderCheckbox.checked ? 'Yes' : 'No';
-      reminderContainer.classList.remove("hidden");
-    } else {
-      reminderContainer.classList.add("hidden");
-    }
-  }
-
 
 
   function delete_event() {

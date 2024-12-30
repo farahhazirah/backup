@@ -87,9 +87,11 @@ class CalendarController extends Controller
             // $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description) VALUES (?, ?, ?, ?, ?)");
             // $stmt->bind_param("sssssss", $event_name, $start_date, $end_date, $event_type, $description);
 
+            $reminder_time = isset($_POST['reminder_time']) && $_POST['set_reminder'] === 'Yes' ? $_POST['reminder_time'] : '0';
+            $set_reminder = isset($_POST['set_reminder']) && $_POST['set_reminder'] === 'Yes' ? 'Yes' : 'No';
+
             $stmt = $conn->prepare("INSERT INTO event (event_name, start_date, end_date, event_type, description, reminder_checkbox, reminder_time) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->bind_param("sssssss", $event_name, $start_date, $end_date, $event_type, $description, $set_reminder, $reminder_time);
-
             if ($stmt->execute()) {
                 echo json_encode(["status" => "success", "message" => "Event created successfully"]);
             } else {
@@ -142,6 +144,24 @@ class CalendarController extends Controller
             return;
         }
 
+            $sql = "
+            SELECT e.id, e.title, e.start, e.end, e.description, 
+                    e.reminder_checkbox, r.name AS reminder_time
+            FROM events e
+            LEFT JOIN reminder_time r ON e.reminder_time_id = r.id
+            WHERE e.id = ?
+            ";
+
+            $stmt = $conn->prepare($sql); // Prepare the statement
+            $stmt->bind_param("i", $eventId); // Bind the event_id parameter (i = integer type)
+            $stmt->execute(); // Execute the query
+
+            $result = $stmt->get_result(); // Get the result set
+            $event = $result->fetch_assoc(); // Fetch the result as an associative array
+
+            $stmt->close(); // Close the statement
+
+
         $event_id = $data->event_id;
 
         $stmt = $conn->prepare("SELECT * FROM event WHERE event_id = ?");
@@ -177,7 +197,7 @@ class CalendarController extends Controller
         $data = json_decode(file_get_contents("php://input"));
 
         $stmt = $conn->prepare("UPDATE event SET event_name = ?, start_date = ?, end_date = ?, event_type = ?, description = ?, reminder_time = ?, reminder_checkbox = ? WHERE event_id = ?");
-        $stmt->bind_param("ssssssi", $data->event_name, $data->start_date, $data->end_date, $data->event_type, $data->description, $data->reminder_time, $data->event_id, $data->reminder_checkbox);
+        $stmt->bind_param("sssssssi", $data->event_name, $data->start_date, $data->end_date, $data->event_type, $data->description, $data->reminder_time, $data->reminder_checkbox, $data->event_id);
 
         if ($stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Event updated successfully"]);
