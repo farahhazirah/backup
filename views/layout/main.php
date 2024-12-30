@@ -10,6 +10,7 @@
     <link rel="icon" href="<?php echo IMAGE_URL; ?>favicon.ico">
     <!-- Link to Bootstrap CSS -->
     <link href="<?php echo ASSET_URL; ?>bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo ASSET_URL; ?>boxicons/css/boxicons.min.css" rel="stylesheet">
 </head>
 
 <body>

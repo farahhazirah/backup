@@ -80,10 +80,9 @@
             <label for="edit_event_reminder_time" class="form-label">Reminder Time</label>
             <select class="form-control" id="edit_event_reminder_time" required>
               <option value="" disabled selected>Select reminder time</option>
-              <option value="15 minutes">15 minutes before</option>
-              <option value="30 minutes">30 minutes before</option>
-              <option value="1 hour">1 hour before</option>
-              <option value="1 day">1 day before</option>
+              <?php foreach ($reminderType as $key => $value) { ?>
+                  <option value="<?php echo $value['name'] ?>"><?php echo $value['name'] ?></option>
+              <?php } ?>
             </select>
           </div>
         </form>

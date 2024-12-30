@@ -15,6 +15,16 @@
             color: #fff !important;
             background: linear-gradient(to right, #4b0000, #800000, #b22222) !important;
         }
+
+        .avatar-xs {
+            height: 2rem;
+            width: 2rem;
+        }
+
+        /*a {
+            color: black;
+            text-decoration: none;
+        }*/
     </style>
 </head>
 
@@ -40,6 +50,25 @@
                             class="nav-link px-2 text-white">History</a></li>
                 </ul>
 
+                <div class="dropdown pe-3">
+                    <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle" 
+                            id="page-header-notifications-dropdown" data-bs-toggle="dropdown" 
+                            data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+                        <i class='bx bxs-bell bx-sm'></i>
+                        <span id="notification-badge" class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
+                        <div class="dropdown-head bg-maroon-gradient bg-pattern rounded-top">
+                            <div class="p-3">
+                                <h6 class="fs-16 fw-semibold text-white"> Notifications </h6>
+                            </div>
+                        </div>
+                        <div data-simplebar style="max-height: 300px;" class="pe-2">
+                            <!-- Notifications will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+
                 <div class="dropdown text-end">
                     <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
                         data-bs-toggle="dropdown" aria-expanded="false">
@@ -56,6 +85,96 @@
                 </div>
             </div>
         </div>
+        <script>
+            async function updateNotificationBadge() {
+                try {
+                    const badge = document.getElementById('notification-badge'); // Select the badge element
+
+                    if (!badge) {
+                        console.error('Badge element not found');
+                        return;
+                    }
+
+                    const response = await fetch('<?= BASE_URL; ?>index.php?r=site/notification'); // Replace with your backend route
+                    const notifications = await response.json();
+
+                    // Update badge content
+                    badge.textContent = notifications.length;
+
+                    // If there are no notifications, hide the badge
+                    if (notifications.length === 0) {
+                        badge.textContent = ''; // Clear the badge content
+                    }
+                } catch (error) {
+                    console.error('Error updating notification badge:', error);
+                }
+            }
+
+            async function loadNotifications() {
+                try {
+                    const container = document.querySelector('.dropdown-menu .pe-2');
+                    const badge = document.getElementById('notification-badge'); // Select the badge element
+
+                    if (!container || !badge) {
+                        console.error('Container or badge element not found');
+                        return;
+                    }
+
+                    const response = await fetch('<?= BASE_URL; ?>index.php?r=site/notification'); // Replace with your backend route
+                    const notifications = await response.json();
+
+                    // Clear existing notifications
+                    container.innerHTML = '';
+
+                    // Update badge content
+                    badge.textContent = notifications.length;
+
+                    // If there are no notifications, display "No upcoming events" and hide badge
+                    if (notifications.length === 0) {
+                        badge.textContent = ''; // Clear the badge content
+                        container.innerHTML = `
+                            <div class="text-center p-3">
+                                <p class="text-muted fs-13">No upcoming events</p>
+                            </div>`;
+                        return;
+                    }
+
+                    // Populate the dropdown with notifications
+                    notifications.forEach(notification => {
+                        const item = `
+                            <div class="text-reset dropdown-item" style="padding: .75rem 1rem;">
+                                <div class="d-flex">
+                                    <i class='bx bxs-bell bx-sm pe-2'></i>
+                                   
+                                     <div class="flex-1">
+                                        <a href="#!" class="stretched-link" style="text-decoration: none; color: #212529bf;">
+                                            <h6 class="mt-0 mb-1 fs-13 fw-semibold">${notification.name}</h6>
+                                        </a>
+                                        <div class="fs-13 text-muted">
+                                            <p class="mb-1">${notification.description}</p>
+                                        </div>
+                                        <p class="mb-0 fs-11 fw-medium text-uppercase text-muted">
+                                            <span><i class="mdi mdi-clock-outline"></i> Starts in ${notification.time_left} hours</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        container.insertAdjacentHTML('beforeend', item);
+                    });
+                } catch (error) {
+                    console.error('Error loading notifications:', error);
+                }
+            }
+
+            // Attach the event listener
+            document.addEventListener('DOMContentLoaded', () => {
+                // Update the badge count on page load
+                updateNotificationBadge();
+
+                // Attach the dropdown loading functionality to the button click
+                document.querySelector('#page-header-notifications-dropdown').addEventListener('click', loadNotifications);
+            });
+        </script>
     </header>
 
 </body>
